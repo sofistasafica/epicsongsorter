@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPIC THE MUSICAL SORTER</title>
+    <style>
+        /* Add your styles inline for GitHub Pages simplicity */
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: #ffffff;
+            color: #000;
+            text-align: center;
+            margin: 0 auto;
+            width: 600px;
+        }
+
+        #mainTable {
+            font-size: 19px;
+            text-align: center;
+            width: 410px;
+            margin: 20px auto;
+            border-spacing: 10px 5px;
+        }
+
+        #leftField, #rightField, .middleField {
+            width: 120px;
+            height: 70px;
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+
+        #leftField, #rightField {
+            height: 150px;
+        }
+
+        table {
+            border: 1px solid #000;
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 300px;
+        }
+
+        td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .instructions {
+            margin: 20px auto;
+        }
+
+        a {
+            color: #e097d9;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #8f8f8f;
+        }
+    </style>
+    <script>
+        // JavaScript code included inline for simplicity
+        const namMember = [
+            "The Horse and the Infant", "Just a Man", "Full Spead Ahead",
+            "Open Arms", "Warrior of the Mind", "Polyphemus",
+            "Survive", "Remember Them", "My Goodbye", "Storm",
+            "Luck Runs Out", "Keep Your Friends Close", "Ruthlessness",
+            "Puppeteer", "Wouldn't You Like", "Done For", "There Are Other Ways",
+            "The Underworld", "No Longer You", "Monster", "Suffering",
+            "Different Beast", "Scylla", "Mutiny", "Thunder Bringer",
+            "Legendary", "Little Wolf", "We'll Be Fine", "Love in Paradise",
+            "God Games", "Not Sorry for Loving You", "Dangerous",
+            "Charybdis", "Get in the Water", "Six Hundred Strike"
+        ];
+
+        let lstMember = [], parent = [], equal = [], rec = [];
+        let cmp1, cmp2, head1, head2, nrec, totalSize, finishSize, finishFlag, numQuestion;
+
+        function initList() {
+            let n = 0;
+            lstMember[n] = namMember.map((_, i) => i);
+            parent[n] = -1;
+            totalSize = lstMember[n].length;
+            n++;
+
+            for (let i = 0; i < lstMember.length; i++) {
+                if (lstMember[i].length >= 2) {
+                    let mid = Math.ceil(lstMember[i].length / 2);
+                    lstMember[n] = lstMember[i].slice(0, mid);
+                    parent[n++] = i;
+                    lstMember[n] = lstMember[i].slice(mid);
+                    parent[n++] = i;
+                }
+            }
+
+            for (let i = 0; i < namMember.length; i++) rec[i] = 0;
+            nrec = 0;
+
+            for (let i = 0; i <= namMember.length; i++) equal[i] = -1;
+
+            cmp1 = lstMember.length - 2;
+            cmp2 = lstMember.length - 1;
+            head1 = head2 = finishSize = finishFlag = 0;
+            numQuestion = 1;
+
+            showImage();
+        }
+
+        function sortList(flag) {
+            if (finishFlag) return;
+
+            if (flag < 0) rec[nrec++] = lstMember[cmp1][head1++];
+            else if (flag > 0) rec[nrec++] = lstMember[cmp2][head2++];
+            else {
+                rec[nrec++] = lstMember[cmp1][head1++];
+                equal[rec[nrec - 1]] = lstMember[cmp2][head2];
+                rec[nrec++] = lstMember[cmp2][head2++];
+            }
+
+            if (head1 === lstMember[cmp1].length && head2 === lstMember[cmp2].length) {
+                for (let i = 0; i < lstMember[cmp1].length + lstMember[cmp2].length; i++) {
+                    lstMember[parent[cmp1]][i] = rec[i];
+                }
+                lstMember.pop();
+                lstMember.pop();
+                cmp1 -= 2;
+                cmp2 -= 2;
+                head1 = head2 = 0;
+                nrec = 0;
+            }
+
+            if (cmp1 < 0) {
+                finishFlag = 1;
+                showResult();
+            } else {
+                showImage();
+            }
+        }
+
+        function showImage() {
+            document.getElementById("battleNumber").innerHTML = `battle #${numQuestion++}<br>${Math.floor(finishSize * 100 / totalSize)}% sorted.`;
+            document.getElementById("leftField").innerHTML = namMember[lstMember[cmp1][head1]];
+            document.getElementById("rightField").innerHTML = namMember[lstMember[cmp2][head2]];
+        }
+
+        function showResult() {
+            let str = "<table><tr><td>Rank</td><td>Option</td></tr>";
+            let rank = 1;
+            for (let i = 0; i < namMember.length; i++) {
+                str += `<tr><td>${rank}</td><td>${namMember[lstMember[0][i]]}</td></tr>`;
+                if (i < namMember.length - 1 && equal[lstMember[0][i]] !== lstMember[0][i + 1]) rank++;
+            }
+            str += "</table>";
+            document.getElementById("resultField").innerHTML = str;
+        }
+    </script>
+</head>
+
+<body>
+    <h1>EPIC THE MUSICAL SORTER</h1>
+    <p class="instructions">Elige la opción que más te guste en cada ronda para ordenar tus canciones favoritas.</p>
+    <table id="mainTable">
+        <tr>
+            <td id="battleNumber" colspan="3">battle #1<br>0% sorted.</td>
+        </tr>
+        <tr>
+            <td id="leftField" onclick="sortList(-1);"></td>
+            <td class="middleField" onclick="sortList(0);">Me gustan las dos</td>
+            <td id="rightField" onclick="sortList(1);"></td>
+        </tr>
+    </table>
+    <div id="resultField"></div>
+    <script>initList();</script>
+</body>
+
+</html>
